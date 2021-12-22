@@ -1,14 +1,7 @@
 import { initializeApp } from "firebase/app";
 
 const firebaseConfig = {
-  apiKey: "AIzaSyChDhCi1jFkLmmOWQGkQu8tlPia9jdjfbM",
-  authDomain: "vue-kinocms-5ad4c.firebaseapp.com",
-  databaseURL: "https://vue-kinocms-5ad4c-default-rtdb.firebaseio.com",
-  projectId: "vue-kinocms-5ad4c",
-  storageBucket: "vue-kinocms-5ad4c.appspot.com",
-  messagingSenderId: "9675706738",
-  appId: "1:9675706738:web:86e4b0d2dce95e66590deb",
-  measurementId: "G-Y04ZTLZL6Y",
+  /
 };
 
 
