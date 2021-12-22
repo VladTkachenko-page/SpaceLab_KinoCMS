@@ -1,5 +1,6 @@
 <template>
-  <div>
+  <Loader v-if="loading" />
+  <div v-else>
     <h2 class="main__title text-center news__header-title">Список новостей</h2>
     <div class="news__header-btn">
       <router-link
@@ -13,8 +14,7 @@
         Создать новость
       </router-link>
     </div>
-    <Loader v-if="loading" />
-    <div class="news__wrap" v-else>
+    <div class="news__wrap" >
       <div class="table-responsive">
         <table class="table table-hover text-nowrap">
           <thead>

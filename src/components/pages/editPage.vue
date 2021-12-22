@@ -32,7 +32,7 @@
     <form id="pageEdit" action="">
       <div class="pageEdit__input-wrap">
         <setName
-          v-if="this.$attrs.lang === 'ru'"
+          v-if="this.$route.path.slice(this.$route.path.length - 2) === 'ru'"
           :objName="this.page.name"
           :name="'Название'"
           @push-data="pushName"
@@ -46,34 +46,54 @@
         />
       </div>
       <setDescription
-        v-if="this.$attrs.lang === 'ru'"
+        v-if="this.$route.path.slice(this.$route.path.length - 2) === 'ru'"
         :objDescription="this.page.description"
         :description="'Описание'"
         @push-data="pushDescription"
       />
       <setDescription
-        v-else 
+        v-else
         :key="2"
         :objDescription="this.page.descriptionUa"
         :description="'Опис'"
         @push-data="pushDescriptionUa"
       />
       <setMainImg
+        v-if="this.$route.path.slice(this.$route.path.length - 2) === 'ru'"
         :objMainImgText="'Главная картинка'"
         :objMainImg="this.page.imgSRC"
         :id="'mainImg'"
         @remove-main-obj-img="removePageImg"
         @push-main-obj-img="pushPageImg"
       />
+      <setMainImg
+        v-else
+        :key="3"
+        :objMainImgText="'Главная картинка'"
+        :objMainImg="this.page.imgSRCUa"
+        :id="'mainImg'"
+        @remove-main-obj-img="removePageImgUa"
+        @push-main-obj-img="pushPageImgUa"
+      />
       <setImgGallery
+        v-if="this.$route.path.slice(this.$route.path.length - 2) === 'ru'"
         :objId="+this.$attrs.id"
         :objImgGallery="this.page.gallery"
         @push-img-gallery="pushGalleryPageImg"
         @remove-img-gallery="removeGalleryImg"
         @add-img-gallery="addImgPageGallery"
       />
+      <setImgGallery
+        v-else
+        :key="4"
+        :objId="+this.$attrs.id"
+        :objImgGallery="this.page.galleryUa"
+        @push-img-gallery="pushGalleryPageImgUa"
+        @remove-img-gallery="removeGalleryImgUa"
+        @add-img-gallery="addImgPageGalleryUa"
+      />
       <setSEO
-        v-if="this.$attrs.lang === 'ru'"
+        v-if="this.$route.path.slice(this.$route.path.length - 2) === 'ru'"
         @push-data="pushSEO"
         :objSEOURL="this.page.seo.seoURL"
         :objSEOTitle="this.page.seo.seoTitle"
@@ -82,6 +102,7 @@
       />
       <setSEO
         v-else
+        :key="5"
         @push-data="pushSEOUa"
         :objSEOURL="this.page.seoUa.seoURL"
         :objSEOTitle="this.page.seoUa.seoTitle"
@@ -182,6 +203,9 @@ export default {
     addImgPageGallery(img) {
       this.page.gallery = img;
     },
+    addImgPageGalleryUa(img) {
+      this.page.galleryUa = img;
+    },
     async sendPageData() {
       try {
         if (this.allPages.findIndex((el) => el.id === this.page.id) === -1) {
@@ -191,12 +215,16 @@ export default {
         this.sending = true;
         setTimeout(() => {
           this.sending = false;
-        }, 4000);
+          this.$router.push("/pages");
+        }, 1000);
       } catch (e) {
         console.log(e);
       }
       if (this.galleryDelete.length !== 0) {
-        this.removePageImgGallery(this.galleryDelete);
+        this.removePageImgGallery({
+          gallery: this.galleryDelete,
+          id: this.page.id,
+        });
         this.galleryDelete = [];
       }
     },
@@ -207,16 +235,49 @@ export default {
     },
     pushPageImg(img) {
       this.page.mainImg = img;
+      this.page.imgSRC = URL.createObjectURL(img);
+      this.disabled = false;
+    },
+    removePageImgUa() {
+      this.page.imgSRCUa =
+        "https://solovero.com/assets/camaleon_cms/image-not-found-4a963b95bf081c3ea02923dceaeb3f8085e1a654fc54840aac61a57a60903fef.png";
+      this.disabled = false;
+    },
+    pushPageImgUa(img) {
+      this.page.mainImgUa = img;
+      this.page.imgSRCUa = URL.createObjectURL(img);
       this.disabled = false;
     },
     pushGalleryPageImg(imgPageData) {
       if (this.page.gallery.length === 0) {
-        this.page.gallery.push({ file: imgPageData.file, id: imgPageData.id });
+        this.page.gallery.push({
+          file: imgPageData.file,
+          id: imgPageData.id,
+          imgSRC: URL.createObjectURL(imgPageData.file),
+        });
       } else {
         this.page.gallery.splice(imgPageData.index, 1, {
           file: imgPageData.file,
           id: imgPageData.id,
           pageId: imgPageData.objId,
+          imgSRC: URL.createObjectURL(imgPageData.file),
+        });
+      }
+      this.disabled = false;
+    },
+    pushGalleryPageImgUa(imgPageData) {
+      if (this.page.galleryUa.length === 0) {
+        this.page.galleryUa.push({
+          file: imgPageData.file,
+          id: imgPageData.id,
+          imgSRC: URL.createObjectURL(imgPageData.file),
+        });
+      } else {
+        this.page.galleryUa.splice(imgPageData.index, 1, {
+          file: imgPageData.file,
+          id: imgPageData.id,
+          pageId: imgPageData.objId,
+          imgSRC: URL.createObjectURL(imgPageData.file),
         });
       }
       this.disabled = false;
@@ -229,14 +290,19 @@ export default {
       this.page.gallery.splice(index, 1);
       this.disabled = false;
     },
+    removeGalleryImgUa(id) {
+      const index = this.page.galleryUa.findIndex((el) => id.imgId === el.id);
+      this.galleryDelete.push(
+        this.page.galleryUa.filter((el) => el.id === id.imgId)[0]
+      );
+      this.page.galleryUa.splice(index, 1);
+      this.disabled = false;
+    },
   },
   computed: mapGetters(["allPages"]),
   async mounted() {
-    console.log(new Date().getTime());
     await this.$store.dispatch("fetchPages", this.allPages);
     const onePage = await this.$store.getters.onePage(+this.$attrs.id)[0];
-    console.log('onePage: ', onePage);
-    console.log(new Date().getTime());
     this.page = onePage;
     if (!this.page) {
       this.page = {

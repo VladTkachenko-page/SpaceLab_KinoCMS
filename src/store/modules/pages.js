@@ -24,7 +24,6 @@ export default {
       
     },
     async sendContactPage({ commit }, page) {
-      console.log('page: ', page);
       const index = this.state.pages.allPages.findIndex((el) => page.id === el.id);
       try {
         await setDb(refDb(db, "pages/" + index), {
@@ -59,8 +58,8 @@ export default {
         commit("error", e);
       }
       const storage = getStorage();
-      const storageRef = ref(storage, `pages/${page.id}/` + page.id);
       if (page.mainImg) {
+        const storageRef = ref(storage, `pages/${page.id}/ru/` + page.id);
         uploadBytes(storageRef, page.mainImg).then((snapshot) => {
           getDownloadURL(ref(storage, snapshot.metadata.fullPath)).then(
             (result) => {
@@ -69,17 +68,47 @@ export default {
           );
         });
       }
+      if (page.mainImgUa) {
+        const storageRef = ref(storage, `pages/${page.id}/ua/` + page.id);
+        uploadBytes(storageRef, page.mainImgUa).then((snapshot) => {
+          getDownloadURL(ref(storage, snapshot.metadata.fullPath)).then(
+            (result) => {
+              updateDb(refDb(db, "pages/" + index), { imgSRCUa: result });
+            }
+          );
+        });
+      }
       if (page.gallery) {
         page.gallery.forEach((el, i) => {
           const storageRefGallery = ref(
             storage,
-            `pages/${el.pageId}/gallery/` + el.id
+            `pages/${page.id}/gallery/` + el.id
           );
           if (el.file) {
             uploadBytes(storageRefGallery, el.file).then((snapshot) => {
               getDownloadURL(ref(storage, snapshot.metadata.fullPath)).then(
                 (result) => {
                   updateDb(refDb(db, `pages/${index}/gallery/` + i), {
+                    id: el.id,
+                    imgSRC: result,
+                  });
+                }
+              );
+            });
+          }
+        });
+      }
+      if (page.galleryUa) {
+        page.galleryUa.forEach((el, i) => {
+          const storageRefGallery = ref(
+            storage,
+            `pages/${page.id}/gallery/` + el.id
+          );
+          if (el.file) {
+            uploadBytes(storageRefGallery, el.file).then((snapshot) => {
+              getDownloadURL(ref(storage, snapshot.metadata.fullPath)).then(
+                (result) => {
+                  updateDb(refDb(db, `pages/${index}/galleryUa/` + i), {
                     id: el.id,
                     imgSRC: result,
                   });
@@ -112,10 +141,10 @@ export default {
       console.log(error);
     },
     async removePageImgGallery(state, deleteObj) {
-      if (deleteObj.length !== 0) {
-        deleteObj.forEach((el) => {
+      if (deleteObj.gallery.length !== 0) {
+        deleteObj.gallery.forEach((el) => {
           const storage = getStorage();
-          const desertRef = ref(storage, `pages/${el.pageId}/gallery/${el.id}`);
+          const desertRef = ref(storage, `pages/${deleteObj.id}/gallery/${el.id}`);
           deleteObject(desertRef)
             .then(() => {})
             .catch((error) => {
@@ -148,7 +177,28 @@ export default {
             });
         });
       }
+      if (data.page.galleryUa !== undefined) {
+        data.page.galleryUa.forEach((el) => {
+          const storage = getStorage();
+          const galleryRef = ref(
+            storage,
+            `pages/${data.page.id}/gallery/${el.id}`
+          );
+          deleteObject(galleryRef)
+            .then(() => {})
+            .catch((error) => {
+              console.log("error: ", error);
+            });
+        });
+      }
       if (data.page.imgSRC) {
+        deleteObject(desertRef)
+          .then(() => {})
+          .catch((error) => {
+            console.log("error: ", error);
+          });
+      }
+      if (data.page.imgSRCUa) {
         deleteObject(desertRef)
           .then(() => {})
           .catch((error) => {

@@ -38,7 +38,7 @@
         </div>
         <div 
           class="mainPagesEdit__phone-input" 
-          v-if="this.$attrs.lang === 'ru'"
+          v-if="this.$route.path.slice(this.$route.path.length - 2) === 'ru'"
         >
           <input
             type="text"
@@ -73,7 +73,7 @@
         </div>
       </div>
       <setDescription
-        v-if="this.$attrs.lang === 'ru'"
+        v-if="this.$route.path.slice(this.$route.path.length - 2) === 'ru'"
         :objDescription="this.mainPages.description"
         :description="'SEO текст'"
         @push-data="pushDescription"
@@ -86,7 +86,7 @@
         @push-data="pushDescriptionUa"
       />
       <setSEO
-        v-if="this.$attrs.lang === 'ru'"
+        v-if="this.$route.path.slice(this.$route.path.length - 2) === 'ru'"
         @push-data="pushSEO"
         :objSEOURL="this.mainPages.seo.seoURL"
         :objSEOTitle="this.mainPages.seo.seoTitle"
@@ -198,7 +198,8 @@ export default {
         this.sending = true;
         setTimeout(() => {
           this.sending = false;
-        }, 4000);
+          this.$router.push('/pages');
+        }, 1000);
       } catch (e) {
         console.log(e);
       }

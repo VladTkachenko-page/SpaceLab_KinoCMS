@@ -12,7 +12,6 @@
           name: 'newsEditRu',
           params: {
             id: this.news.id,
-            lang: 'ru'
           },
         }"
       >

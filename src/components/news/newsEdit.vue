@@ -32,7 +32,7 @@
     <form id="newsEdit" action="">
       <div class="newsEdit__input-wrap">
         <setName
-          v-if="this.$attrs.lang === 'ru'"
+          v-if="this.$route.path.slice(this.$route.path.length - 2) === 'ru'"
           :objName="this.news.name"
           :name="'Название новости'"
           @push-data="pushName"
@@ -51,7 +51,7 @@
         />
       </div>
       <setDescription
-        v-if="this.$attrs.lang === 'ru'"
+        v-if="this.$route.path.slice(this.$route.path.length - 2) === 'ru'"
         :objDescription="this.news.description"
         :description="'Описание'"
         @push-data="pushDescription"
@@ -64,21 +64,41 @@
         @push-data="pushDescriptionUa"
       />
       <setMainImg
+        v-if="this.$route.path.slice(this.$route.path.length - 2) === 'ru'"
         :objMainImgText="'Главная картинка'"
         :objMainImg="this.news.imgSRC"
         :id="'mainImg'"
         @remove-main-obj-img="removeNewsImg"
         @push-main-obj-img="pushNewsImg"
       />
+      <setMainImg
+        v-else
+        :key="5"
+        :objMainImgText="'Главная картинка'"
+        :objMainImg="this.news.imgSRCUa"
+        :id="'mainImg'"
+        @remove-main-obj-img="removeNewsImgUa"
+        @push-main-obj-img="pushNewsImgUa"
+      />
       <setImgGallery
+        v-if="this.$route.path.slice(this.$route.path.length - 2) === 'ru'"
         :objId="+this.$attrs.id"
         :objImgGallery="this.news.gallery"
         @push-img-gallery="pushGalleryNewsImg"
         @remove-img-gallery="removeGalleryImg"
         @add-img-gallery="addImgNewsGallery"
       />
+      <setImgGallery
+        v-else
+        :key="6"
+        :objId="+this.$attrs.id"
+        :objImgGallery="this.news.galleryUa"
+        @push-img-gallery="pushGalleryNewsImgUa"
+        @remove-img-gallery="removeGalleryImgUa"
+        @add-img-gallery="addImgNewsGalleryUa"
+      />
       <setVideo
-        v-if="this.$attrs.lang === 'ru'"
+        v-if="this.$route.path.slice(this.$route.path.length - 2) === 'ru'"
         :nameUrl="'Ссылка на видео'"
         :objVideo="this.news.videoURL"
         @push-data="pushVideo"
@@ -91,7 +111,7 @@
         @push-data="pushVideoUa"
       />
       <setSEO
-        v-if="this.$attrs.lang === 'ru'"
+        v-if="this.$route.path.slice(this.$route.path.length - 2) === 'ru'"
         @push-data="pushSEO"
         :objSEOURL="this.news.seo.seoURL"
         :objSEOTitle="this.news.seo.seoTitle"
@@ -216,6 +236,11 @@ export default {
     },
     addImgNewsGallery(img) {
       this.news.gallery = img;
+      this.disabled = false;
+    },
+    addImgNewsGalleryUa(img) {
+      this.news.galleryUa = img;
+      this.disabled = false;
     },
     async sendNewsData() {
       try {
@@ -226,12 +251,16 @@ export default {
         this.sending = true;
         setTimeout(() => {
           this.sending = false;
-        }, 4000);
+          this.$router.push('/news');
+        }, 1000);
       } catch (e) {
         console.log(e);
       }
       if (this.galleryDelete.length !== 0) {
-        this.removeNewsImgGallery(this.galleryDelete);
+        this.removeNewsImgGallery({
+          gallery: this.galleryDelete,
+          id: this.news.id,
+        });
         this.galleryDelete = [];
       }
     },
@@ -242,16 +271,18 @@ export default {
     },
     pushNewsImg(img) {
       this.news.mainImg = img;
+      this.news.imgSRC = URL.createObjectURL(img);
       this.disabled = false;
     },
     pushGalleryNewsImg(imgNewsData) {
       if (this.news.gallery.length === 0) {
-        this.news.gallery.push({ file: imgNewsData.file, id: imgNewsData.id });
+        this.news.gallery.push({ file: imgNewsData.file, id: imgNewsData.id, imgSRC: URL.createObjectURL(imgNewsData.file) });
       } else {
         this.news.gallery.splice(imgNewsData.index, 1, {
           file: imgNewsData.file,
           id: imgNewsData.id,
           newsId: imgNewsData.objId,
+          imgSRC: URL.createObjectURL(imgNewsData.file)
         });
       }
       this.disabled = false;
@@ -262,6 +293,37 @@ export default {
         this.news.gallery.filter((el) => el.id === id.imgId)[0]
       );
       this.news.gallery.splice(index, 1);
+      this.disabled = false;
+    },
+    removeNewsImgUa() {
+      this.news.imgSRCUa =
+        "https://solovero.com/assets/camaleon_cms/image-not-found-4a963b95bf081c3ea02923dceaeb3f8085e1a654fc54840aac61a57a60903fef.png";
+      this.disabled = false;
+    },
+    pushNewsImgUa(img) {
+      this.news.mainImgUa = img;
+      this.news.imgSRCUa = URL.createObjectURL(img);
+      this.disabled = false;
+    },
+    pushGalleryNewsImgUa(imgNewsData) {
+      if (this.news.galleryUa.length === 0) {
+        this.news.galleryUa.push({ file: imgNewsData.file, id: imgNewsData.id, imgSRC: URL.createObjectURL(imgNewsData.file) });
+      } else {
+        this.news.galleryUa.splice(imgNewsData.index, 1, {
+          file: imgNewsData.file,
+          id: imgNewsData.id,
+          newsId: imgNewsData.objId,
+          imgSRC: URL.createObjectURL(imgNewsData.file)
+        });
+      }
+      this.disabled = false;
+    },
+    removeGalleryImgUa(id) {
+      const index = this.news.galleryUa.findIndex((el) => id.imgId === el.id);
+      this.galleryDelete.push(
+        this.news.galleryUa.filter((el) => el.id === id.imgId)[0]
+      );
+      this.news.galleryUa.splice(index, 1);
       this.disabled = false;
     },
   },

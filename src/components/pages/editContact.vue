@@ -46,7 +46,7 @@
         Добавить еще кинотеатр
       </button>
       <setSEO
-        v-if="this.$attrs.lang === 'ru'"
+        v-if="this.$route.path.slice(this.$route.path.length - 2) === 'ru'"
         @push-data="pushSEO"
         :objSEOURL="this.page.seo.seoURL"
         :objSEOTitle="this.page.seo.seoTitle"
@@ -176,7 +176,8 @@ export default {
         this.sending = true;
         setTimeout(() => {
           this.sending = false;
-        }, 4000);
+          this.$router.push('/pages');
+        }, 1000);
       } catch (e) {
         console.log(e);
       }

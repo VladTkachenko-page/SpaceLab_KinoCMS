@@ -12,7 +12,6 @@
           name: 'stockEditRu',
           params: {
             id: this.stock.id,
-            lang: 'ru'
           },
         }"
       >

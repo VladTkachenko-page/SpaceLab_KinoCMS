@@ -34,10 +34,11 @@
 export default {
   data: () => ({
     links: [
-      { title: "Статистика", url: "/", exact: true },
+      { title: "Статистика", url: "/statistics", exact: true },
       { title: "Баннера/Слайдеры", url: "/banners" },
       { title: "Фильмы", url: "/films" },
-      { title: "Кинонеатры", url: "/cinemas" },
+      { title: "Расписание", url: "/timetableDay" },
+      { title: "Кинонеатры", url: "/cinemasAdd" },
       { title: "Новости", url: "/news" },
       { title: "Акции", url: "/stocks" },
       { title: "Страницы", url: "/pages" },

@@ -65,7 +65,7 @@ export default {
   flex-direction: column;
   justify-content: center;
   align-items: center;
-  margin-right: 20px;
+  margin-right: 25px;
   max-width: 250px;
   cursor: pointer;
   position: relative;

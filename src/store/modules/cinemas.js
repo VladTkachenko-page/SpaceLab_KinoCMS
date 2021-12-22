@@ -27,9 +27,9 @@ export default {
       if (cinema.logoImg) {
         const storageRef = ref(
           storage,
-          `cinemas/${cinema.id}/logo/` + cinema.id
+          `cinemas/${cinema.id}/logo/ru/${cinema.id}`
         );
-        uploadBytes(storageRef, cinema.logoImg).then((snapshot) => {
+        await uploadBytes(storageRef, cinema.logoImg).then((snapshot) => {
           getDownloadURL(ref(storage, snapshot.metadata.fullPath)).then(
             (result) => {
               updateDb(refDb(db, "cinemas/" + index), { imgLogoSRC: result });
@@ -37,10 +37,23 @@ export default {
           );
         });
       }
+      if (cinema.logoImgUa) {
+        const storageRef = ref(
+          storage,
+          `cinemas/${cinema.id}/logo/ua/` + cinema.id
+        );
+        uploadBytes(storageRef, cinema.logoImgUa).then((snapshot) => {
+          getDownloadURL(ref(storage, snapshot.metadata.fullPath)).then(
+            (result) => {
+              updateDb(refDb(db, "cinemas/" + index), { imgLogoSRCUa: result });
+            }
+          );
+        });
+      }
       if (cinema.bannerImg) {
         const storageRef = ref(
           storage,
-          `cinemas/${cinema.id}/banner/` + cinema.id
+          `cinemas/${cinema.id}/banner/ru/` + cinema.id
         );
         uploadBytes(storageRef, cinema.bannerImg).then((snapshot) => {
           getDownloadURL(ref(storage, snapshot.metadata.fullPath)).then(
@@ -50,11 +63,24 @@ export default {
           );
         });
       }
+      if (cinema.bannerImgUa) {
+        const storageRef = ref(
+          storage,
+          `cinemas/${cinema.id}/banner/ua/` + cinema.id
+        );
+        uploadBytes(storageRef, cinema.bannerImgUa).then((snapshot) => {
+          getDownloadURL(ref(storage, snapshot.metadata.fullPath)).then(
+            (result) => {
+              updateDb(refDb(db, "cinemas/" + index), { imgBannerSRCUa: result });
+            }
+          );
+        });
+      }
       if (cinema.gallery) {
         cinema.gallery.forEach((el, i) => {
           const storageRefGallery = ref(
             storage,
-            `cinemas/${el.cinemaId}/gallery/` + el.id
+            `cinemas/${cinema.id}/gallery/` + el.id
           );
           if (el.file) {
             uploadBytes(storageRefGallery, el.file).then((snapshot) => {
@@ -70,12 +96,32 @@ export default {
           }
         });
       }
+      if (cinema.galleryUa) {
+        cinema.galleryUa.forEach((el, i) => {
+          const storageRefGallery = ref(
+            storage,
+            `cinemas/${cinema.id}/gallery/` + el.id
+          );
+          if (el.file) {
+            uploadBytes(storageRefGallery, el.file).then((snapshot) => {
+              getDownloadURL(ref(storage, snapshot.metadata.fullPath)).then(
+                (result) => {
+                  updateDb(refDb(db, `cinemas/${index}/galleryUa/` + i), {
+                    id: el.id,
+                    imgSRC: result,
+                  });
+                }
+              );
+            });
+          }
+        });
+      }
       if (cinema.halls) {
         for (let key in cinema.halls) {
           if (cinema.halls[key].schemeImg) {
             const storageRef = ref(
               storage,
-              `cinemas/${cinema.halls[key].cinemaId}/halls/${cinema.halls[key].id}/scheme/` +
+              `cinemas/${cinema.halls[key].cinemaId}/halls/${cinema.halls[key].id}/scheme/ru/` +
                 cinema.halls[key].id
             );
             uploadBytes(storageRef, cinema.halls[key].schemeImg).then(
@@ -96,10 +142,34 @@ export default {
               }
             );
           }
+          if (cinema.halls[key].schemeImgUa) {
+            const storageRef = ref(
+              storage,
+              `cinemas/${cinema.halls[key].cinemaId}/halls/${cinema.halls[key].id}/scheme/ua/` +
+                cinema.halls[key].id
+            );
+            uploadBytes(storageRef, cinema.halls[key].schemeImgUa).then(
+              (snapshot) => {
+                getDownloadURL(ref(storage, snapshot.metadata.fullPath)).then(
+                  (result) => {
+                    updateDb(
+                      refDb(
+                        db,
+                        `cinemas/${index}/halls/${cinema.halls[key].id}`
+                      ),
+                      {
+                        imgSchemeSRCUa: result,
+                      }
+                    );
+                  }
+                );
+              }
+            );
+          }
           if (cinema.halls[key].bannerImg) {
             const storageRef = ref(
               storage,
-              `cinemas/${cinema.halls[key].cinemaId}/halls/${cinema.halls[key].id}/banner/` +
+              `cinemas/${cinema.halls[key].cinemaId}/halls/${cinema.halls[key].id}/banner/ru/` +
                 cinema.halls[key].id
             );
             uploadBytes(storageRef, cinema.halls[key].bannerImg).then(
@@ -120,11 +190,35 @@ export default {
               }
             );
           }
+          if (cinema.halls[key].bannerImgUa) {
+            const storageRef = ref(
+              storage,
+              `cinemas/${cinema.halls[key].cinemaId}/halls/${cinema.halls[key].id}/banner/ua/` +
+                cinema.halls[key].id
+            );
+            uploadBytes(storageRef, cinema.halls[key].bannerImgUa).then(
+              (snapshot) => {
+                getDownloadURL(ref(storage, snapshot.metadata.fullPath)).then(
+                  (result) => {
+                    updateDb(
+                      refDb(
+                        db,
+                        `cinemas/${index}/halls/${cinema.halls[key].id}`
+                      ),
+                      {
+                        imgBannerSRCUa: result,
+                      }
+                    );
+                  }
+                );
+              }
+            );
+          }
           if (cinema.halls[key].gallery) {
             cinema.halls[key].gallery.forEach((el, i) => {
               const storageRefGallery = ref(
                 storage,
-                `cinemas/${cinema.halls[key].cinemaId}/halls/${cinema.halls[key].id}/gallery/` +
+                `cinemas/${cinema.id}/halls/${cinema.halls[key].id}/gallery/` +
                   el.id
               );
               if (el.file) {
@@ -135,6 +229,34 @@ export default {
                         refDb(
                           db,
                           `cinemas/${index}/halls/${cinema.halls[key].id}/gallery/` +
+                            i
+                        ),
+                        {
+                          id: el.id,
+                          imgSRC: result,
+                        }
+                      );
+                    }
+                  );
+                });
+              }
+            });
+          }
+          if (cinema.halls[key].galleryUa) {
+            cinema.halls[key].galleryUa.forEach((el, i) => {
+              const storageRefGallery = ref(
+                storage,
+                `cinemas/${cinema.id}/halls/${cinema.halls[key].id}/gallery/` +
+                  el.id
+              );
+              if (el.file) {
+                uploadBytes(storageRefGallery, el.file).then((snapshot) => {
+                  getDownloadURL(ref(storage, snapshot.metadata.fullPath)).then(
+                    (result) => {
+                      updateDb(
+                        refDb(
+                          db,
+                          `cinemas/${index}/halls/${cinema.halls[key].id}/galleryUa/` +
                             i
                         ),
                         {
@@ -175,28 +297,13 @@ export default {
     error(state, error) {
       console.log(error);
     },
-    async removeMainCinemaImg(state, id) {
-      const storage = getStorage();
-      const desertRef = ref(storage, `cinemas/${id}/` + id);
-      deleteObject(desertRef)
-        .then(() => {
-          const index = state.cinemas.findIndex((el) => id === el.id);
-          updateDb(refDb(db, "cinemas/" + index), {
-            imgSRC:
-              "https://solovero.com/assets/camaleon_cms/image-not-found-4a963b95bf081c3ea02923dceaeb3f8085e1a654fc54840aac61a57a60903fef.png",
-          });
-        })
-        .catch((error) => {
-          console.log(error);
-        });
-    },
     async removeCinemaImgGallery(state, deleteObj) {
-      if (deleteObj.length !== 0) {
-        deleteObj.forEach((el) => {
+      if (deleteObj.gallery.length !== 0) {
+        deleteObj.gallery.forEach((el) => {
           const storage = getStorage();
           const desertRef = ref(
             storage,
-            `cinemas/${el.cinemaId}/gallery/${el.id}`
+            `cinemas/${deleteObj.id}/gallery/${el.id}`
           );
           deleteObject(desertRef)
             .then(() => {})
@@ -207,12 +314,12 @@ export default {
       }
     },
     async removeHallImgGallery(state, deleteObj) {
-      if (deleteObj.length !== 0) {
-        deleteObj.forEach((el) => {
+      if (deleteObj.gallery.length !== 0) {
+        deleteObj.gallery.forEach((el) => {
           const storage = getStorage();
-          const desertRef = ref(
+          let desertRef = ref(
             storage,
-            `cinemas/${el.cinemaId}/halls/${el.hallId}/gallery/${el.id}`
+            `cinemas/${deleteObj.id}/halls/${el.hallId}/gallery/${el.id}`
           );
           deleteObject(desertRef)
             .then(() => {})
@@ -233,14 +340,36 @@ export default {
       const storage = getStorage();
       const logoRef = ref(
         storage,
-        `cinemas/${data.cinema.id}/logo/${data.cinema.id}`
+        `cinemas/${data.cinema.id}/logo/ru/${data.cinema.id}`
+      );
+      const logoRefUa = ref(
+        storage,
+        `cinemas/${data.cinema.id}/logo/ua/${data.cinema.id}`
       );
       const bannerRef = ref(
         storage,
-        `cinemas/${data.cinema.id}/banner/${data.cinema.id}`
+        `cinemas/${data.cinema.id}/banner/ru/${data.cinema.id}`
+      );
+      const bannerRefUa = ref(
+        storage,
+        `cinemas/${data.cinema.id}/banner/ua/${data.cinema.id}`
       );
       if (data.cinema.gallery !== undefined) {
         data.cinema.gallery.forEach((el) => {
+          const storage = getStorage();
+          const galleryRef = ref(
+            storage,
+            `cinemas/${data.cinema.id}/gallery/${el.id}`
+          );
+          deleteObject(galleryRef)
+            .then(() => {})
+            .catch((error) => {
+              console.log("error: ", error);
+            });
+        });
+      }
+      if (data.cinema.galleryUa !== undefined) {
+        data.cinema.galleryUa.forEach((el) => {
           const storage = getStorage();
           const galleryRef = ref(
             storage,
@@ -262,6 +391,20 @@ export default {
       }
       if (data.cinema.imgBannerSRC) {
         deleteObject(bannerRef)
+          .then(() => {})
+          .catch((error) => {
+            console.log("error: ", error);
+          });
+      }
+      if (data.cinema.imgLogoSRCUa) {
+        deleteObject(logoRefUa)
+          .then(() => {})
+          .catch((error) => {
+            console.log("error: ", error);
+          });
+      }
+      if (data.cinema.imgBannerSRCUa) {
+        deleteObject(bannerRefUa)
           .then(() => {})
           .catch((error) => {
             console.log("error: ", error);
@@ -291,6 +434,20 @@ export default {
               });
           });
         }
+        if (data.cinema.halls[key].galleryUa !== undefined) {
+          data.cinema.halls[key].galleryUa.forEach((el) => {
+            const storage = getStorage();
+            const desertRef = ref(
+              storage,
+              `cinemas/${el.cinemaId}/halls/${el.hallId}/gallery/${el.id}`
+            );
+            deleteObject(desertRef)
+              .then(() => {})
+              .catch((error) => {
+                console.log("error: ", error);
+              });
+          });
+        }
         if (data.cinema.halls[key].imgSchemeSRC) {
           deleteObject(schemeHallRef)
             .then(() => {})
@@ -299,6 +456,20 @@ export default {
             });
         }
         if (data.cinema.halls[key].imgBannerSRC) {
+          deleteObject(bannerHallRef)
+            .then(() => {})
+            .catch((error) => {
+              console.log("error: ", error);
+            });
+        }
+        if (data.cinema.halls[key].imgSchemeSRCUa) {
+          deleteObject(schemeHallRef)
+            .then(() => {})
+            .catch((error) => {
+              console.log("error: ", error);
+            });
+        }
+        if (data.cinema.halls[key].imgBannerSRCUa) {
           deleteObject(bannerHallRef)
             .then(() => {})
             .catch((error) => {

@@ -1,11 +1,20 @@
 <template>
-  <div class="overlay">
-    <p>Loading...</p>
+  <div class="loading-overlay">
+    <span class="fas fa-spinner fa-3x fa-spin"></span>
   </div>
 </template>
 
 <style scoped>
-.overlay {
-  text-align: center;
+.loading-overlay {
+  display: flex;
+  background: rgba(255, 255, 255, 0.7);
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  top: 0;
+  z-index: 9998;
+  align-items: center;
+  justify-content: center;
 }
 </style>

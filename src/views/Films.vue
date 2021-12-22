@@ -1,8 +1,8 @@
 <template>
-  <div>
+  <Loader v-if="loading" />
+  <div v-else>
     <h2 class="main__title text-center films__title">Список текущих фильмов</h2>
-    <Loader v-if="loading" />
-    <div class="films-wrap" v-else>
+    <div class="films-wrap" >
       <filmsCard
         v-for="film in this.allFilms"
         :key="film.id"
@@ -24,8 +24,7 @@
     <h2 class="main__title text-center films__title">
       Список фильмов которые покажут скоро
     </h2>
-    <Loader v-if="loading" />
-    <div class="films-wrap" v-else>
+    <div class="films-wrap">
       <filmsCard
         v-for="film in this.allFilmsComming"
         :key="film.id"

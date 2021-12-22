@@ -5,7 +5,7 @@
     <td>{{ this.hall.date }}</td>
     <td>
       <router-link
-        v-if="this.$attrs.lang === 'ru'"
+        v-if="this.$route.path.slice(this.$route.path.length - 2) === 'ru'"
         class="hall-btn btn-success"
         tag="button"
         :to="{
@@ -22,7 +22,7 @@
         Ред
       </router-link>
       <router-link
-      v-else
+        v-else
         class="hall-btn btn-success"
         tag="button"
         :to="{

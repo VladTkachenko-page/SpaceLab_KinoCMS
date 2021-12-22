@@ -100,6 +100,7 @@ export default {
   max-width: 200px;
   margin-right: 20px;
   position: relative;
+  margin-bottom: 20px;
 }
 .banner-card__delete {
   display: flex;

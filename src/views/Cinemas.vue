@@ -1,8 +1,8 @@
 <template>
-  <div>
+  <Loader v-if="loading" />
+  <div v-else>
     <h2 class="main__title text-center cinemas__title">Список кинотеатров</h2>
-    <Loader v-if="loading" />
-    <div class="cinemas-wrap" v-else>
+    <div class="cinemas-wrap" >
       <cinemasCard
         v-for="cinema in this.allCinemas"
         :key="cinema.id"

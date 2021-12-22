@@ -12,7 +12,6 @@
           name: 'mainPagesRu',
           params: {
             id: this.page.id,
-            lang: 'ru'
           },
         }"
       >
@@ -27,7 +26,6 @@
           name: 'editContactRu',
           params: {
             id: this.page.id,
-            lang: 'ru'
           },
         }"
       >
@@ -42,7 +40,6 @@
           name: 'editPageRu',
           params: {
             id: this.page.id,
-            lang: 'ru'
           },
         }"
       >

@@ -43,24 +43,46 @@ export default {
           );
         });
       }
-      film.gallery.forEach((el, i) => {
-        const storageRefGallery = ref(
-          storage,
-          `films/${el.filmId}/gallery/` + el.id
-        );
-        if (el.file) {
-          uploadBytes(storageRefGallery, el.file).then((snapshot) => {
-            getDownloadURL(ref(storage, snapshot.metadata.fullPath)).then(
-              (result) => {
-                updateDb(refDb(db, `films/${index}/gallery/` + i), {
-                  id: el.id,
-                  imgSRC: result,
-                });
-              }
-            );
-          });
-        }
-      });
+      if (film.gallery) {
+        film.gallery.forEach((el, i) => {
+          const storageRefGallery = ref(
+            storage,
+            `films/${el.filmId}/gallery/` + el.id
+          );
+          if (el.file) {
+            uploadBytes(storageRefGallery, el.file).then((snapshot) => {
+              getDownloadURL(ref(storage, snapshot.metadata.fullPath)).then(
+                (result) => {
+                  updateDb(refDb(db, `films/${index}/gallery/` + i), {
+                    id: el.id,
+                    imgSRC: result,
+                  });
+                }
+              );
+            });
+          }
+        });
+      }
+      if (film.galleryUa) {
+        film.galleryUa.forEach((el, i) => {
+          const storageRefGallery = ref(
+            storage,
+            `films/${film.id}/gallery/` + el.id
+          );
+          if (el.file) {
+            uploadBytes(storageRefGallery, el.file).then((snapshot) => {
+              getDownloadURL(ref(storage, snapshot.metadata.fullPath)).then(
+                (result) => {
+                  updateDb(refDb(db, `films/${index}/galleryUa/` + i), {
+                    id: el.id,
+                    imgSRC: result,
+                  });
+                }
+              );
+            });
+          }
+        });
+      }
     },
     async sendFilmComming({ commit }, film) {
       const index = this.state.films.filmsComming.findIndex(
@@ -79,7 +101,7 @@ export default {
         uploadBytes(storageRef, film.mainImg).then((snapshot) => {
           getDownloadURL(ref(storage, snapshot.metadata.fullPath)).then(
             (result) => {
-              updateDb(refDb(db, "films/" + index), { imgSRC: result });
+              updateDb(refDb(db, "filmsComming/" + index), { imgSRC: result });
             }
           );
         });
@@ -89,7 +111,9 @@ export default {
         uploadBytes(storageRef, film.mainImgUa).then((snapshot) => {
           getDownloadURL(ref(storage, snapshot.metadata.fullPath)).then(
             (result) => {
-              updateDb(refDb(db, "films/" + index), { imgSRCUa: result });
+              updateDb(refDb(db, "filmsComming/" + index), {
+                imgSRCUa: result,
+              });
             }
           );
         });
@@ -98,13 +122,33 @@ export default {
         film.gallery.forEach((el, i) => {
           const storageRefGallery = ref(
             storage,
-            `films/${el.filmId}/gallery/` + el.id
+            `films/${film.id}/gallery/` + el.id
           );
           if (el.file) {
             uploadBytes(storageRefGallery, el.file).then((snapshot) => {
               getDownloadURL(ref(storage, snapshot.metadata.fullPath)).then(
                 (result) => {
                   updateDb(refDb(db, `filmsComming/${index}/gallery/` + i), {
+                    id: el.id,
+                    imgSRC: result,
+                  });
+                }
+              );
+            });
+          }
+        });
+      }
+      if (film.galleryUa) {
+        film.galleryUa.forEach((el, i) => {
+          const storageRefGallery = ref(
+            storage,
+            `films/${film.id}/gallery/` + el.id
+          );
+          if (el.file) {
+            uploadBytes(storageRefGallery, el.file).then((snapshot) => {
+              getDownloadURL(ref(storage, snapshot.metadata.fullPath)).then(
+                (result) => {
+                  updateDb(refDb(db, `filmsComming/${index}/galleryUa/` + i), {
                     id: el.id,
                     imgSRC: result,
                   });
@@ -156,10 +200,13 @@ export default {
       console.log(error);
     },
     removeFilmImgGallery(state, deleteObj) {
-      if (deleteObj.length !== 0) {
-        deleteObj.forEach((el) => {
+      if (deleteObj.gallery.length !== 0) {
+        deleteObj.gallery.forEach((el) => {
           const storage = getStorage();
-          const desertRef = ref(storage, `films/${el.filmId}/gallery/${el.id}`);
+          const desertRef = ref(
+            storage,
+            `films/${deleteObj.id}/gallery/${el.id}`
+          );
           deleteObject(desertRef)
             .then(() => {})
             .catch((error) => {
@@ -179,6 +226,20 @@ export default {
       const storage = getStorage();
       if (data.film.gallery !== undefined) {
         data.film.gallery.forEach((el) => {
+          const storage = getStorage();
+          const galleryRef = ref(
+            storage,
+            `films/${data.film.id}/gallery/${el.id}`
+          );
+          deleteObject(galleryRef)
+            .then(() => {})
+            .catch((error) => {
+              console.log("error: ", error);
+            });
+        });
+      }
+      if (data.film.galleryUa !== undefined) {
+        data.film.galleryUa.forEach((el) => {
           const storage = getStorage();
           const galleryRef = ref(
             storage,
@@ -225,6 +286,20 @@ export default {
       const storage = getStorage();
       if (data.film.gallery !== undefined) {
         data.film.gallery.forEach((el) => {
+          const storage = getStorage();
+          const galleryRef = ref(
+            storage,
+            `films/${data.film.id}/gallery/${el.id}`
+          );
+          deleteObject(galleryRef)
+            .then(() => {})
+            .catch((error) => {
+              console.log("error: ", error);
+            });
+        });
+      }
+      if (data.film.galleryUa !== undefined) {
+        data.film.galleryUa.forEach((el) => {
           const storage = getStorage();
           const galleryRef = ref(
             storage,

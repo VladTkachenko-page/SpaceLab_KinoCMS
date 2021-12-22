@@ -22,8 +22,8 @@ export default {
         commit("error", e);
       }
       const storage = getStorage();
-      const storageRef = ref(storage, `news/${news.id}/` + news.id);
       if (news.mainImg) {
+        const storageRef = ref(storage, `news/${news.id}/ru/` + news.id);
         uploadBytes(storageRef, news.mainImg).then((snapshot) => {
           getDownloadURL(ref(storage, snapshot.metadata.fullPath)).then(
             (result) => {
@@ -32,17 +32,47 @@ export default {
           );
         });
       }
+      if (news.mainImgUa) {
+        const storageRef = ref(storage, `news/${news.id}/ua/` + news.id);
+        uploadBytes(storageRef, news.mainImgUa).then((snapshot) => {
+          getDownloadURL(ref(storage, snapshot.metadata.fullPath)).then(
+            (result) => {
+              updateDb(refDb(db, "news/" + index), { imgSRCUa: result });
+            }
+          );
+        });
+      }
       if (news.gallery) {
         news.gallery.forEach((el, i) => {
           const storageRefGallery = ref(
             storage,
-            `news/${el.newsId}/gallery/` + el.id
+            `news/${news.id}/gallery/` + el.id
           );
           if (el.file) {
             uploadBytes(storageRefGallery, el.file).then((snapshot) => {
               getDownloadURL(ref(storage, snapshot.metadata.fullPath)).then(
                 (result) => {
                   updateDb(refDb(db, `news/${index}/gallery/` + i), {
+                    id: el.id,
+                    imgSRC: result,
+                  });
+                }
+              );
+            });
+          }
+        });
+      }
+      if (news.galleryUa) {
+        news.galleryUa.forEach((el, i) => {
+          const storageRefGallery = ref(
+            storage,
+            `news/${news.id}/gallery/` + el.id
+          );
+          if (el.file) {
+            uploadBytes(storageRefGallery, el.file).then((snapshot) => {
+              getDownloadURL(ref(storage, snapshot.metadata.fullPath)).then(
+                (result) => {
+                  updateDb(refDb(db, `news/${index}/galleryUa/` + i), {
                     id: el.id,
                     imgSRC: result,
                   });
@@ -75,10 +105,10 @@ export default {
       console.log(error);
     },
     async removeNewsImgGallery(state, deleteObj) {
-      if (deleteObj.length !== 0) {
-        deleteObj.forEach((el) => {
+      if (deleteObj.gallery.length !== 0) {
+        deleteObj.gallery.forEach((el) => {
           const storage = getStorage();
-          const desertRef = ref(storage, `news/${el.newsId}/gallery/${el.id}`);
+          const desertRef = ref(storage, `news/${deleteObj.id}/gallery/${el.id}`);
           deleteObject(desertRef)
             .then(() => {})
             .catch((error) => {
@@ -111,7 +141,28 @@ export default {
             });
         });
       }
+      if (data.news.galleryUa !== undefined) {
+        data.news.galleryUa.forEach((el) => {
+          const storage = getStorage();
+          const galleryRef = ref(
+            storage,
+            `news/${data.news.id}/gallery/${el.id}`
+          );
+          deleteObject(galleryRef)
+            .then(() => {})
+            .catch((error) => {
+              console.log("error: ", error);
+            });
+        });
+      }
       if (data.news.imgSRC) {
+        deleteObject(desertRef)
+          .then(() => {})
+          .catch((error) => {
+            console.log("error: ", error);
+          });
+      }
+      if (data.news.imgSRCUa) {
         deleteObject(desertRef)
           .then(() => {})
           .catch((error) => {

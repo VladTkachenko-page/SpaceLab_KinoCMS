@@ -1,5 +1,6 @@
 <template>
-  <div>
+  <Loader v-if="loading" />
+  <div v-else>
     <h2 class="main__title text-center stock__header-title">Список акций</h2>
     <div class="stock__header-btn">
       <router-link
@@ -13,8 +14,7 @@
         Создать акцию
       </router-link>
     </div>
-    <Loader v-if="loading" />
-    <div class="stock__wrap" v-else>
+    <div class="stock__wrap">
       <div class="table-responsive">
         <table class="table table-hover text-nowrap">
           <thead>

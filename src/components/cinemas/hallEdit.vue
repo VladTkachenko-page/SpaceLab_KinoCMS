@@ -1,10 +1,10 @@
 <template>
   <Loader v-if="loading" />
   <div v-else>
-    <LangEdit :linkRu="'hallEditRu'" :linkUa="'hallEditUa'"/>
+    <LangEdit :linkRu="'hallEditRu'" :linkUa="'hallEditUa'" />
     <form id="hallEdit" action="">
       <setName
-        v-if="this.$attrs.lang === 'ru'"
+        v-if="this.$route.path.slice(this.$route.path.length - 2) === 'ru'"
         :objName="this.hall.name"
         :name="'Номер зала'"
         @push-data="pushName"
@@ -17,7 +17,7 @@
         @push-data="pushNameUa"
       />
       <setDescription
-        v-if="this.$attrs.lang === 'ru'"
+        v-if="this.$route.path.slice(this.$route.path.length - 2) === 'ru'"
         :objDescription="this.hall.description"
         :description="'Описание зала'"
         @push-data="pushDescription"
@@ -30,6 +30,7 @@
         @push-data="pushDescriptionUa"
       />
       <setMainImg
+        v-if="this.$route.path.slice(this.$route.path.length - 2) === 'ru'"
         :objMainImgText="'Схема зала'"
         :objMainImg="this.hall.imgSchemeSRC"
         :id="'scheme'"
@@ -37,21 +38,50 @@
         @push-main-obj-img="pushHallSchemeImg"
       />
       <setMainImg
+        v-else
+        :key="4"
+        :objMainImgText="'Схема зала'"
+        :objMainImg="this.hall.imgSchemeSRCUa"
+        :id="'scheme'"
+        @remove-main-obj-img="removeHallSchemeImgUa"
+        @push-main-obj-img="pushHallSchemeImgUa"
+      />
+      <setMainImg
+        v-if="this.$route.path.slice(this.$route.path.length - 2) === 'ru'"
         :objMainImgText="'Верхний баннер'"
         :objMainImg="this.hall.imgBannerSRC"
         :id="'banner'"
         @remove-main-obj-img="removeHallBannerImg"
         @push-main-obj-img="pushHallBannerImg"
       />
+      <setMainImg
+        v-else
+        :key="5"
+        :objMainImgText="'Верхний баннер'"
+        :objMainImg="this.hall.imgBannerSRCUa"
+        :id="'banner'"
+        @remove-main-obj-img="removeHallBannerImgUa"
+        @push-main-obj-img="pushHallBannerImgUa"
+      />
       <setImgGallery
+        v-if="this.$route.path.slice(this.$route.path.length - 2) === 'ru'"
         :objId="+this.$attrs.id"
         :objImgGallery="this.hall.gallery"
         @push-img-gallery="pushGalleryHallImg"
         @remove-img-gallery="removeGalleryImg"
         @add-img-gallery="addImgHallGallery"
       />
+      <setImgGallery
+        v-else
+        :key="6"
+        :objId="+this.$attrs.id"
+        :objImgGallery="this.hall.galleryUa"
+        @push-img-gallery="pushGalleryHallImgUa"
+        @remove-img-gallery="removeGalleryImgUa"
+        @add-img-gallery="addImgHallGalleryUa"
+      />
       <setSEO
-        v-if="this.$attrs.lang === 'ru'"
+        v-if="this.$route.path.slice(this.$route.path.length - 2) === 'ru'"
         @push-data="pushSEO"
         :objSEOURL="this.hall.seo.seoURL"
         :objSEOTitle="this.hall.seo.seoTitle"
@@ -69,20 +99,20 @@
       />
       <div class="edit-buttons">
         <router-link
-          v-if="this.$attrs.lang === 'ru'"
+          v-if="this.$route.path.slice(this.$route.path.length - 2) === 'ru'"
           tag="button"
           class="btn-success"
           :disabled="this.disabled"
-
           :to="{
             name: 'cinemaEditRu',
             params: {
               id: +this.$attrs.id,
               idHall: +this.$attrs.idHall,
               hall: this.hall,
+              delete: this.galleryDelete,
               cinema: this.$attrs.cinema || this.cinema,
               disabled: false,
-              lang: 'ru'
+              lang: 'ru',
             },
           }"
         >
@@ -93,23 +123,23 @@
           tag="button"
           class="btn-success"
           :disabled="this.disabled"
-
           :to="{
             name: 'cinemaEditUa',
             params: {
               id: +this.$attrs.id,
               idHall: +this.$attrs.idHall,
+              delete: this.galleryDelete,
               hall: this.hall,
               cinema: this.$attrs.cinema || this.cinema,
               disabled: false,
-              lang: 'ua'
+              lang: 'ua',
             },
           }"
         >
           Сохранить
         </router-link>
         <router-link
-          v-if="this.$attrs.lang === 'ru'"
+          v-if="this.$route.path.slice(this.$route.path.length - 2) === 'ru'"
           tag="button"
           class="btn-primary"
           :to="{
@@ -119,7 +149,7 @@
               idHall: +this.$attrs.idHall,
               allHalls: this.hallsCopy,
               disabled: false,
-              lang: 'ru'
+              lang: 'ru',
             },
           }"
         >
@@ -136,7 +166,7 @@
               idHall: +this.$attrs.idHall,
               allHalls: this.hallsCopy,
               disabled: false,
-              lang: 'ua'
+              lang: 'ua',
             },
           }"
         >
@@ -178,7 +208,7 @@ export default {
     setImgGallery,
     setSEO,
     Toast,
-    LangEdit
+    LangEdit,
   },
   methods: {
     ...mapMutations([
@@ -213,22 +243,11 @@ export default {
     },
     addImgHallGallery(img) {
       this.hall.gallery = img;
+      this.disabled = false;
     },
-    async sendHallData() {
-      try {
-        await this.$store.dispatch("sendHall", this.hall);
-        this.sending = true;
-        setTimeout(() => {
-          this.sending = false;
-        }, 4000);
-        this.disabled = true;
-      } catch (e) {
-        console.log(e);
-      }
-      if (this.galleryDelete.length !== 0) {
-        this.removeHallImgGallery(this.galleryDelete);
-        this.galleryDelete = [];
-      }
+    addImgHallGalleryUa(img) {
+      this.hall.galleryUa = img;
+      this.disabled = false;
     },
     removeHallSchemeImg() {
       this.hall.imgSchemeSRC =
@@ -237,6 +256,16 @@ export default {
     },
     removeHallBannerImg() {
       this.hall.imgBannerSRC =
+        "https://solovero.com/assets/camaleon_cms/image-not-found-4a963b95bf081c3ea02923dceaeb3f8085e1a654fc54840aac61a57a60903fef.png";
+      this.disabled = false;
+    },
+    removeHallSchemeImgUa() {
+      this.hall.imgSchemeSRCUa =
+        "https://solovero.com/assets/camaleon_cms/image-not-found-4a963b95bf081c3ea02923dceaeb3f8085e1a654fc54840aac61a57a60903fef.png";
+      this.disabled = false;
+    },
+    removeHallBannerImgUa() {
+      this.hall.imgBannerSRCUa =
         "https://solovero.com/assets/camaleon_cms/image-not-found-4a963b95bf081c3ea02923dceaeb3f8085e1a654fc54840aac61a57a60903fef.png";
       this.disabled = false;
     },
@@ -250,27 +279,68 @@ export default {
       this.hall.imgBannerSRC = URL.createObjectURL(img);
       this.disabled = false;
     },
+    pushHallSchemeImgUa(img) {
+      this.hall.schemeImgUa = img;
+      this.hall.imgSchemeSRCUa = URL.createObjectURL(img);
+      this.disabled = false;
+    },
+    pushHallBannerImgUa(img) {
+      this.hall.bannerImgUa = img;
+      this.hall.imgBannerSRCUa = URL.createObjectURL(img);
+      this.disabled = false;
+    },
     pushGalleryHallImg(imgHallData) {
       if (this.hall.gallery.length === 0) {
-        this.hall.gallery.push({ file: imgHallData.file, id: imgHallData.id, cinemaId: imgHallData.objId,
-          hallId: +this.$attrs.idHall,});
+        this.hall.gallery.push({
+          file: imgHallData.file,
+          id: imgHallData.id,
+          cinemaId: imgHallData.objId,
+          hallId: +this.$attrs.idHall,
+        });
       } else {
         this.hall.gallery.splice(imgHallData.index, 1, {
           file: imgHallData.file,
           id: imgHallData.id,
           cinemaId: imgHallData.objId,
           hallId: +this.$attrs.idHall,
-          imgSRC: imgHallData.imgSRC
+          imgSRC: imgHallData.imgSRC,
+        });
+      }
+      this.disabled = false;
+    },
+    pushGalleryHallImgUa(imgHallData) {
+      if (this.hall.galleryUa.length === 0) {
+        this.hall.galleryUa.push({
+          file: imgHallData.file,
+          id: imgHallData.id,
+          cinemaId: imgHallData.objId,
+          hallId: +this.$attrs.idHall,
+        });
+      } else {
+        this.hall.galleryUa.splice(imgHallData.index, 1, {
+          file: imgHallData.file,
+          id: imgHallData.id,
+          cinemaId: imgHallData.objId,
+          hallId: +this.$attrs.idHall,
+          imgSRC: imgHallData.imgSRC,
         });
       }
       this.disabled = false;
     },
     removeGalleryImg(id) {
       const index = this.hall.gallery.findIndex((el) => id.imgId === el.id);
-      this.galleryDelete.push(
-        this.hall.gallery.filter((el) => el.id === id.imgId)[0]
-      );
+      let del = this.hall.gallery.filter((el) => el.id === id.imgId)[0];
+      del["hallId"] = this.hall.id;
+      this.galleryDelete.push(del);
       this.hall.gallery.splice(index, 1);
+      this.disabled = false;
+    },
+    removeGalleryImgUa(id) {
+      const index = this.hall.galleryUa.findIndex((el) => id.imgId === el.id);
+      let del = this.hall.galleryUa.filter((el) => el.id === id.imgId)[0];
+      del["hallId"] = this.hall.id;
+      this.galleryDelete.push(del);
+      this.hall.galleryUa.splice(index, 1);
       this.disabled = false;
     },
   },
@@ -280,7 +350,9 @@ export default {
     let oneCinema = this.$attrs.cinema;
     this.cinema = oneCinema;
     if (!this.$attrs.cinema) {
-      this.cinema = this.allCinemas.filter(el => el.id === +this.$attrs.id)[0];
+      this.cinema = this.allCinemas.filter(
+        (el) => el.id === +this.$attrs.id
+      )[0];
       if (!this.cinema.halls) {
         this.cinema.halls = {};
       }

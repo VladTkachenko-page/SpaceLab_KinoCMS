@@ -13,7 +13,9 @@ export default {
   },
   actions: {
     async sendStock({ commit }, stock) {
-      const index = this.state.stocks.allStocks.findIndex((el) => stock.id === el.id);
+      const index = this.state.stocks.allStocks.findIndex(
+        (el) => stock.id === el.id
+      );
       try {
         setDb(refDb(db, "stocks/" + index), {
           ...stock,
@@ -22,8 +24,8 @@ export default {
         commit("error", e);
       }
       const storage = getStorage();
-      const storageRef = ref(storage, `stocks/${stock.id}/` + stock.id);
       if (stock.mainImg) {
+        const storageRef = ref(storage, `stocks/${stock.id}/ru/` + stock.id);
         uploadBytes(storageRef, stock.mainImg).then((snapshot) => {
           getDownloadURL(ref(storage, snapshot.metadata.fullPath)).then(
             (result) => {
@@ -32,17 +34,47 @@ export default {
           );
         });
       }
+      if (stock.mainImgUa) {
+        const storageRef = ref(storage, `stocks/${stock.id}/ua/` + stock.id);
+        uploadBytes(storageRef, stock.mainImgUa).then((snapshot) => {
+          getDownloadURL(ref(storage, snapshot.metadata.fullPath)).then(
+            (result) => {
+              updateDb(refDb(db, "stocks/" + index), { imgSRCUa: result });
+            }
+          );
+        });
+      }
       if (stock.gallery) {
         stock.gallery.forEach((el, i) => {
           const storageRefGallery = ref(
             storage,
-            `stocks/${el.stockId}/gallery/` + el.id
+            `stocks/${stock.id}/gallery/` + el.id
           );
           if (el.file) {
             uploadBytes(storageRefGallery, el.file).then((snapshot) => {
               getDownloadURL(ref(storage, snapshot.metadata.fullPath)).then(
                 (result) => {
                   updateDb(refDb(db, `stocks/${index}/gallery/` + i), {
+                    id: el.id,
+                    imgSRC: result,
+                  });
+                }
+              );
+            });
+          }
+        });
+      }
+      if (stock.galleryUa) {
+        stock.galleryUa.forEach((el, i) => {
+          const storageRefGallery = ref(
+            storage,
+            `stocks/${stock.id}/gallery/` + el.id
+          );
+          if (el.file) {
+            uploadBytes(storageRefGallery, el.file).then((snapshot) => {
+              getDownloadURL(ref(storage, snapshot.metadata.fullPath)).then(
+                (result) => {
+                  updateDb(refDb(db, `stocks/${index}/galleryUa/` + i), {
                     id: el.id,
                     imgSRC: result,
                   });
@@ -75,10 +107,13 @@ export default {
       console.log(error);
     },
     async removeStockImgGallery(state, deleteObj) {
-      if (deleteObj.length !== 0) {
-        deleteObj.forEach((el) => {
+      if (deleteObj.gallery.length !== 0) {
+        deleteObj.gallery.forEach((el) => {
           const storage = getStorage();
-          const desertRef = ref(storage, `stocks/${el.stockId}/gallery/${el.id}`);
+          const desertRef = ref(
+            storage,
+            `stocks/${deleteObj.id}/gallery/${el.id}`
+          );
           deleteObject(desertRef)
             .then(() => {})
             .catch((error) => {
@@ -96,7 +131,10 @@ export default {
         commit("error", e);
       }
       const storage = getStorage();
-      const desertRef = ref(storage, `stocks/${data.stock.id}/${data.stock.id}`);
+      const desertRef = ref(
+        storage,
+        `stocks/${data.stock.id}/${data.stock.id}`
+      );
       if (data.stock.gallery !== undefined) {
         data.stock.gallery.forEach((el) => {
           const storage = getStorage();
@@ -111,7 +149,28 @@ export default {
             });
         });
       }
+      if (data.stock.galleryUa !== undefined) {
+        data.stock.galleryUa.forEach((el) => {
+          const storage = getStorage();
+          const galleryRef = ref(
+            storage,
+            `stocks/${data.stock.id}/gallery/${el.id}`
+          );
+          deleteObject(galleryRef)
+            .then(() => {})
+            .catch((error) => {
+              console.log("error: ", error);
+            });
+        });
+      }
       if (data.stock.imgSRC) {
+        deleteObject(desertRef)
+          .then(() => {})
+          .catch((error) => {
+            console.log("error: ", error);
+          });
+      }
+      if (data.stock.imgSRCUa) {
         deleteObject(desertRef)
           .then(() => {})
           .catch((error) => {

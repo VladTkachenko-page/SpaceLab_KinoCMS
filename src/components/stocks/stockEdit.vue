@@ -3,16 +3,36 @@
   <div v-else>
     <div class="stock-edit__header">
       <LangEdit :linkRu="'stockEditRu'" :linkUa="'stockEditUa'" />
-      <div class="custom-control custom-switch custom-switch-off-danger custom-switch-on-success stock__switch">
-        <input type="checkbox" class="custom-control-input" id="stockCheck" v-model="status" @change="pushStatus" :checked="this.stock.status">
-        <label v-if="this.stock.status" class="custom-control-label" for="stockCheck">ВКЛ</label>
+      <div
+        class="
+          custom-control
+          custom-switch
+          custom-switch-off-danger
+          custom-switch-on-success
+          stock__switch
+        "
+      >
+        <input
+          type="checkbox"
+          class="custom-control-input"
+          id="stockCheck"
+          v-model="status"
+          @change="pushStatus"
+          :checked="this.stock.status"
+        />
+        <label
+          v-if="this.stock.status"
+          class="custom-control-label"
+          for="stockCheck"
+          >ВКЛ</label
+        >
         <label v-else class="custom-control-label" for="stockCheck">ВЫКЛ</label>
       </div>
     </div>
     <form id="stockEdit" action="">
       <div class="stockEdit__input-wrap">
         <setName
-          v-if="this.$attrs.lang === 'ru'"
+          v-if="this.$route.path.slice(this.$route.path.length - 2) === 'ru'"
           :objName="this.stock.name"
           :name="'Название акции'"
           @push-data="pushName"
@@ -31,7 +51,7 @@
         />
       </div>
       <setDescription
-        v-if="this.$attrs.lang === 'ru'"
+        v-if="this.$route.path.slice(this.$route.path.length - 2) === 'ru'"
         :objDescription="this.stock.description"
         :description="'Описание'"
         @push-data="pushDescription"
@@ -44,21 +64,41 @@
         @push-data="pushDescriptionUa"
       />
       <setMainImg
+        v-if="this.$route.path.slice(this.$route.path.length - 2) === 'ru'"
         :objMainImgText="'Главная картинка'"
         :objMainImg="this.stock.imgSRC"
         :id="'mainImg'"
         @remove-main-obj-img="removeStockImg"
         @push-main-obj-img="pushStockImg"
       />
+      <setMainImg
+        v-else
+        :key="5"
+        :objMainImgText="'Главная картинка'"
+        :objMainImg="this.stock.imgSRCUa"
+        :id="'mainImg'"
+        @remove-main-obj-img="removeStockImgUa"
+        @push-main-obj-img="pushStockImgUa"
+      />
       <setImgGallery
+        v-if="this.$route.path.slice(this.$route.path.length - 2) === 'ru'"
         :objId="+this.$attrs.id"
         :objImgGallery="this.stock.gallery"
         @push-img-gallery="pushGalleryStockImg"
         @remove-img-gallery="removeGalleryImg"
         @add-img-gallery="addImgStockGallery"
       />
+      <setImgGallery
+        v-else
+        :key="6"
+        :objId="+this.$attrs.id"
+        :objImgGallery="this.stock.galleryUa"
+        @push-img-gallery="pushGalleryStockImgUa"
+        @remove-img-gallery="removeGalleryImgUa"
+        @add-img-gallery="addImgStockGalleryUa"
+      />
       <setVideo
-        v-if="this.$attrs.lang === 'ru'"
+        v-if="this.$route.path.slice(this.$route.path.length - 2) === 'ru'"
         :nameUrl="'Ссылка на видео'"
         :objVideo="this.stock.videoURL"
         @push-data="pushVideo"
@@ -71,7 +111,7 @@
         @push-data="pushVideoUa"
       />
       <setSEO
-        v-if="this.$attrs.lang === 'ru'"
+        v-if="this.$route.path.slice(this.$route.path.length - 2) === 'ru'"
         @push-data="pushSEO"
         :objSEOURL="this.stock.seo.seoURL"
         :objSEOTitle="this.stock.seo.seoTitle"
@@ -146,7 +186,7 @@ export default {
     setImgGallery,
     setVideo,
     setSEO,
-    LangEdit
+    LangEdit,
   },
   methods: {
     ...mapMutations([
@@ -155,7 +195,7 @@ export default {
       "removeStockImgGallery",
     ]),
     pushStatus() {
-      this.stock.status = this.status
+      this.stock.status = this.status;
       this.disabled = false;
     },
     pushName(name) {
@@ -197,6 +237,9 @@ export default {
     addImgStockGallery(img) {
       this.stock.gallery = img;
     },
+    addImgStockGalleryUa(img) {
+      this.stock.galleryUa = img;
+    },
     async sendStockData() {
       try {
         if (this.allStocks.findIndex((el) => el.id === this.stock.id) === -1) {
@@ -206,12 +249,16 @@ export default {
         this.sending = true;
         setTimeout(() => {
           this.sending = false;
-        }, 4000);
+          this.$router.push("/stocks");
+        }, 1000);
       } catch (e) {
         console.log(e);
       }
       if (this.galleryDelete.length !== 0) {
-        this.removeStockImgGallery(this.galleryDelete);
+        this.removeStockImgGallery({
+          gallery: this.galleryDelete,
+          id: this.stock.id,
+        });
         this.galleryDelete = [];
       }
     },
@@ -222,16 +269,47 @@ export default {
     },
     pushStockImg(img) {
       this.stock.mainImg = img;
+      this.stock.imgSRC = URL.createObjectURL(img);
+      this.disabled = false;
+    },
+    removeStockImgUa() {
+      this.stock.imgSRCUa =
+        "https://solovero.com/assets/camaleon_cms/image-not-found-4a963b95bf081c3ea02923dceaeb3f8085e1a654fc54840aac61a57a60903fef.png";
+      this.disabled = false;
+    },
+    pushStockImgUa(img) {
+      this.stock.mainImgUa = img;
+      this.stock.imgSRCUa = URL.createObjectURL(img);
       this.disabled = false;
     },
     pushGalleryStockImg(imgStockData) {
       if (this.stock.gallery.length === 0) {
-        this.stock.gallery.push({ file: imgStockData.file, id: imgStockData.id });
+        this.stock.gallery.push({
+          file: imgStockData.file,
+          id: imgStockData.id,
+        });
       } else {
         this.stock.gallery.splice(imgStockData.index, 1, {
           file: imgStockData.file,
           id: imgStockData.id,
           stockId: imgStockData.objId,
+        });
+      }
+      this.disabled = false;
+    },
+    pushGalleryStockImgUa(imgStockData) {
+      if (this.stock.galleryUa.length === 0) {
+        this.stock.galleryUa.push({
+          file: imgStockData.file,
+          id: imgStockData.id,
+          imgSRC: URL.createObjectURL(imgStockData.file)
+        });
+      } else {
+        this.stock.galleryUa.splice(imgStockData.index, 1, {
+          file: imgStockData.file,
+          id: imgStockData.id,
+          stockId: imgStockData.objId,
+          imgSRC: URL.createObjectURL(imgStockData.file)
         });
       }
       this.disabled = false;
@@ -242,6 +320,14 @@ export default {
         this.stock.gallery.filter((el) => el.id === id.imgId)[0]
       );
       this.stock.gallery.splice(index, 1);
+      this.disabled = false;
+    },
+    removeGalleryImgUa(id) {
+      const index = this.stock.galleryUa.findIndex((el) => id.imgId === el.id);
+      this.galleryDelete.push(
+        this.stock.galleryUa.filter((el) => el.id === id.imgId)[0]
+      );
+      this.stock.galleryUa.splice(index, 1);
       this.disabled = false;
     },
   },
@@ -266,7 +352,7 @@ export default {
       this.stock.seoUa = {};
     }
     if (!this.status) {
-      this.status = this.stock.status
+      this.status = this.stock.status;
     }
     this.loading = false;
   },

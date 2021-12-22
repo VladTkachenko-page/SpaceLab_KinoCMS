@@ -1,4 +1,5 @@
 import { initializeApp } from "firebase/app";
+
 const firebaseConfig = {
   apiKey: "AIzaSyChDhCi1jFkLmmOWQGkQu8tlPia9jdjfbM",
   authDomain: "vue-kinocms-5ad4c.firebaseapp.com",
@@ -9,6 +10,8 @@ const firebaseConfig = {
   appId: "1:9675706738:web:86e4b0d2dce95e66590deb",
   measurementId: "G-Y04ZTLZL6Y",
 };
+
+
 
 initializeApp(firebaseConfig);
 

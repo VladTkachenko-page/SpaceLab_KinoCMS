@@ -1,10 +1,10 @@
 <template>
   <Loader v-if="loading" />
   <div v-else>
-    <LangEdit :linkRu="'cinemaEditRu'" :linkUa="'cinemaEditUa'"/>
+    <LangEdit :linkRu="'cinemaEditRu'" :linkUa="'cinemaEditUa'" />
     <form id="cinemaEdit" action="">
       <setName
-        v-if="this.$attrs.lang === 'ru'"
+        v-if="this.$route.path.slice(this.$route.path.length - 2) === 'ru'"
         :objName="this.cinema.name"
         :name="'Название кинотеатра'"
         @push-data="pushName"
@@ -17,7 +17,7 @@
         @push-data="pushNameUa"
       />
       <setDescription
-        v-if="this.$attrs.lang === 'ru'"
+        v-if="this.$route.path.slice(this.$route.path.length - 2) === 'ru'"
         :objDescription="this.cinema.description"
         :description="'Описание'"
         @push-data="pushDescription"
@@ -30,7 +30,7 @@
         @push-data="pushDescriptionUa"
       />
       <setDescription
-        v-if="this.$attrs.lang === 'ru'"
+        v-if="this.$route.path.slice(this.$route.path.length - 2) === 'ru'"
         :objDescription="this.cinema.circs"
         :description="'Условия'"
         @push-data="pushCircs"
@@ -43,6 +43,7 @@
         @push-data="pushCircsUa"
       />
       <setMainImg
+        v-if="this.$route.path.slice(this.$route.path.length - 2) === 'ru'"
         :objMainImgText="'Логотип'"
         :objMainImg="this.cinema.imgLogoSRC"
         :id="'logo'"
@@ -50,7 +51,16 @@
         @push-main-obj-img="pushCinemaLogoImg"
       />
       <setMainImg
-        v-if="this.$attrs.lang === 'ru'"
+        v-else
+        :key="5"
+        :objMainImgText="'Логотип'"
+        :objMainImg="this.cinema.imgLogoSRCUa"
+        :id="'logo'"
+        @remove-main-obj-img="removeCinemaLogoImgUa"
+        @push-main-obj-img="pushCinemaLogoImgUa"
+      />
+      <setMainImg
+        v-if="this.$route.path.slice(this.$route.path.length - 2) === 'ru'"
         :objMainImgText="'Фото верхнего баннера'"
         :objMainImg="this.cinema.imgBannerSRC"
         :id="'banner'"
@@ -59,18 +69,29 @@
       />
       <setMainImg
         v-else
+        :key="6"
         :objMainImgText="'Фото верхнього банера'"
-        :objMainImg="this.cinema.imgBannerSRC"
+        :objMainImg="this.cinema.imgBannerSRCUa"
         :id="'banner'"
-        @remove-main-obj-img="removeCinemaBannerImg"
-        @push-main-obj-img="pushCinemaBannerImg"
+        @remove-main-obj-img="removeCinemaBannerImgUa"
+        @push-main-obj-img="pushCinemaBannerImgUa"
       />
       <setImgGallery
+        v-if="this.$route.path.slice(this.$route.path.length - 2) === 'ru'"
         :objId="+this.$attrs.id"
         :objImgGallery="this.cinema.gallery"
         @push-img-gallery="pushGalleryCinemaImg"
         @remove-img-gallery="removeGalleryImg"
         @add-img-gallery="addImgCinemaGallery"
+      />
+      <setImgGallery
+        v-else
+        :key="7"
+        :objId="+this.$attrs.id"
+        :objImgGallery="this.cinema.galleryUa"
+        @push-img-gallery="pushGalleryCinemaImgUa"
+        @remove-img-gallery="removeGalleryImgUa"
+        @add-img-gallery="addImgCinemaGalleryUa"
       />
       <div class="card-body table-responsive">
         <table class="table table-hover text-nowrap">
@@ -101,7 +122,7 @@
               id: +this.$attrs.id,
               idHall: new Date().getTime(),
               cinema: this.cinema,
-              lang: 'ru'
+              lang: 'ru',
             },
           }"
           class="btn-success"
@@ -110,7 +131,7 @@
         </router-link>
       </div>
       <setSEO
-        v-if="this.$attrs.lang === 'ru'"
+        v-if="this.$route.path.slice(this.$route.path.length - 2) === 'ru'"
         @push-data="pushSEO"
         :objSEOURL="this.cinema.seo.seoURL"
         :objSEOTitle="this.cinema.seo.seoTitle"
@@ -208,6 +229,7 @@ export default {
       "pushCinemaGalleryImg",
       "removeCinemaImgGallery",
       "removeHall",
+      "removeHallImgGallery"
     ]),
     showModalDelete(hall) {
       this.showModal = true;
@@ -247,24 +269,41 @@ export default {
     },
     addImgCinemaGallery(img) {
       this.cinema.gallery = img;
+      this.disabled = false;
+    },
+    addImgCinemaGalleryUa(img) {
+      this.cinema.galleryUa = img;
+      this.disabled = false;
     },
     async sendCinemaData() {
       try {
-        if (this.allCinemas.findIndex(el => el.id === this.cinema.id) === -1) {
+        if (
+          this.allCinemas.findIndex((el) => el.id === this.cinema.id) === -1
+        ) {
           this.allCinemas.push(this.cinema);
         }
         await this.$store.dispatch("sendCinema", this.cinema);
         this.sending = true;
         setTimeout(() => {
           this.sending = false;
-        }, 4000);
+          this.$router.push("/cinemasAdd");
+        }, 1000);
         this.disabled = true;
       } catch (e) {
         console.log(e);
       }
       if (this.galleryDelete.length !== 0) {
-        this.removeCinemaImgGallery(this.galleryDelete);
+        this.removeCinemaImgGallery({
+          gallery: this.galleryDelete,
+          id: this.cinema.id,
+        });
         this.galleryDelete = [];
+      }
+      if (this.$attrs.delete && this.$attrs.delete.length !== 0) {
+        this.removeHallImgGallery({
+          gallery: this.$attrs.delete,
+          id: this.cinema.id,
+        });
       }
     },
     removeCinemaLogoImg() {
@@ -274,6 +313,16 @@ export default {
     },
     removeCinemaBannerImg() {
       this.cinema.imgBannerSRC =
+        "https://solovero.com/assets/camaleon_cms/image-not-found-4a963b95bf081c3ea02923dceaeb3f8085e1a654fc54840aac61a57a60903fef.png";
+      this.disabled = false;
+    },
+    removeCinemaLogoImgUa() {
+      this.cinema.imgLogoSRCUa =
+        "https://solovero.com/assets/camaleon_cms/image-not-found-4a963b95bf081c3ea02923dceaeb3f8085e1a654fc54840aac61a57a60903fef.png";
+      this.disabled = false;
+    },
+    removeCinemaBannerImgUa() {
+      this.cinema.imgBannerSRCUa =
         "https://solovero.com/assets/camaleon_cms/image-not-found-4a963b95bf081c3ea02923dceaeb3f8085e1a654fc54840aac61a57a60903fef.png";
       this.disabled = false;
     },
@@ -287,14 +336,42 @@ export default {
       this.cinema.imgBannerSRC = URL.createObjectURL(img);
       this.disabled = false;
     },
+    pushCinemaLogoImgUa(img) {
+      this.cinema.logoImgUa = img;
+      this.cinema.imgLogoSRCUa = URL.createObjectURL(img);
+      this.disabled = false;
+    },
+    pushCinemaBannerImgUa(img) {
+      this.cinema.bannerImgUa = img;
+      this.cinema.imgBannerSRCUa = URL.createObjectURL(img);
+      this.disabled = false;
+    },
     pushGalleryCinemaImg(imgCinemaData) {
       if (this.cinema.gallery.length === 0) {
         this.cinema.gallery.push({
           file: imgCinemaData.file,
           id: imgCinemaData.id,
+          imgSRC: imgCinemaData.imgSRC,
         });
       } else {
         this.cinema.gallery.splice(imgCinemaData.index, 1, {
+          file: imgCinemaData.file,
+          id: imgCinemaData.id,
+          cinemaId: imgCinemaData.objId,
+          imgSRC: imgCinemaData.imgSRC,
+        });
+      }
+      this.disabled = false;
+    },
+    pushGalleryCinemaImgUa(imgCinemaData) {
+      if (this.cinema.galleryUa.length === 0) {
+        this.cinema.galleryUa.push({
+          file: imgCinemaData.file,
+          id: imgCinemaData.id,
+          imgSRC: imgCinemaData.imgSRC,
+        });
+      } else {
+        this.cinema.galleryUa.splice(imgCinemaData.index, 1, {
           file: imgCinemaData.file,
           id: imgCinemaData.id,
           cinemaId: imgCinemaData.objId,
@@ -309,6 +386,14 @@ export default {
         this.cinema.gallery.filter((el) => el.id === id.imgId)[0]
       );
       this.cinema.gallery.splice(index, 1);
+      this.disabled = false;
+    },
+    removeGalleryImgUa(id) {
+      const index = this.cinema.galleryUa.findIndex((el) => id.imgId === el.id);
+      this.galleryDelete.push(
+        this.cinema.galleryUa.filter((el) => el.id === id.imgId)[0]
+      );
+      this.cinema.galleryUa.splice(index, 1);
       this.disabled = false;
     },
     async deleteHall(hall) {
@@ -334,7 +419,7 @@ export default {
     if (!this.cinema.seoUa) {
       this.cinema.seoUa = {};
     }
-    if(this.$attrs.allHalls) {
+    if (this.$attrs.allHalls) {
       this.cinema.halls = this.$attrs.allHalls;
     }
     if (this.$attrs.cinema) {
@@ -361,7 +446,8 @@ form {
   align-items: flex-start;
   justify-content: center;
 }
-.edit-buttons, .add-buttons {
+.edit-buttons,
+.add-buttons {
   display: flex;
   justify-content: center;
   align-items: center;

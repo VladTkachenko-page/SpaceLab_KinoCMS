@@ -1,10 +1,10 @@
 <template>
   <Loader v-if="loading" />
   <div v-else>
-    <LangEdit :linkRu="'filmsEditRu'" :linkUa="'filmsEditUa'"/>
+    <LangEdit :linkRu="'filmsEditRu'" :linkUa="'filmsEditUa'" />
     <form id="filmEdit" action="">
       <setName
-        v-if="this.$attrs.lang === 'ru'"
+        v-if="this.$route.path.slice(this.$route.path.length - 2) === 'ru'"
         :objName="this.film.name"
         :name="'Название фильма'"
         @push-data="pushName"
@@ -17,7 +17,7 @@
         @push-data="pushNameUa"
       />
       <setDescription
-        v-if="this.$attrs.lang === 'ru'"
+        v-if="this.$route.path.slice(this.$route.path.length - 2) === 'ru'"
         :objDescription="this.film.description"
         :description="'Описание'"
         @push-data="pushDescription"
@@ -30,7 +30,7 @@
         @push-data="pushDescriptionUa"
       />
       <setMainImg
-        v-if="this.$attrs.lang === 'ru'"
+        v-if="this.$route.path.slice(this.$route.path.length - 2) === 'ru'"
         :objMainImgText="'Главная картинка'"
         :objMainImg="this.film.imgSRC"
         :id="'mainImg'"
@@ -47,14 +47,24 @@
         @push-main-obj-img="pushFilmImgUa"
       />
       <setImgGallery
+        v-if="this.$route.path.slice(this.$route.path.length - 2) === 'ru'"
         :objId="+this.$attrs.id"
         :objImgGallery="this.film.gallery"
         @push-img-gallery="pushGalleryFilmImg"
         @remove-img-gallery="removeGalleryImg"
         @add-img-gallery="addImgFilmGallery"
       />
+      <setImgGallery
+        v-else
+        :key="6"
+        :objId="+this.$attrs.id"
+        :objImgGallery="this.film.galleryUa"
+        @push-img-gallery="pushGalleryFilmImgUa"
+        @remove-img-gallery="removeGalleryImgUa"
+        @add-img-gallery="addImgFilmGalleryUa"
+      />
       <setVideo
-        v-if="this.$attrs.lang === 'ru'"
+        v-if="this.$route.path.slice(this.$route.path.length - 2) === 'ru'"
         :nameUrl="'Ссылка на трейлер'"
         :objVideo="this.film.videoURL"
         @push-data="pushVideo"
@@ -103,7 +113,7 @@
         </div>
       </div>
       <setSEO
-        v-if="this.$attrs.lang === 'ru'"
+        v-if="this.$route.path.slice(this.$route.path.length - 2) === 'ru'"
         :objSEOURL="this.film.seo.seoURL"
         :objSEOTitle="this.film.seo.seoTitle"
         :objSEOWords="this.film.seo.seoWords"
@@ -166,11 +176,8 @@ import { mapGetters, mapMutations } from "vuex";
 
 export default {
   data() {
+    console.log();
     return {
-      links: [
-        { title: "Русский", url: `filmsEditRu`, lang: "ru", exact: true },
-        { title: "Украинский", url: `filmsEditUa`, lang: "ua" },
-      ],
       loading: true,
       sending: false,
       disabled: true,
@@ -235,9 +242,14 @@ export default {
     },
     addImgFilmGallery(img) {
       this.film.gallery = img;
+      this.disabled = false;
+    },
+    addImgFilmGalleryUa(img) {
+      this.film.galleryUa = img;
+      this.disabled = false;
     },
     async sendFilmData() {
-      if (this.$attrs.comming) {
+      if (this.film.comming) {
         try {
           if (
             this.allFilmsComming.findIndex((el) => el.id === this.film.id) ===
@@ -249,7 +261,8 @@ export default {
           this.sending = true;
           setTimeout(() => {
             this.sending = false;
-          }, 4000);
+            this.$router.push("/films");
+          }, 1000);
           this.disabled = true;
         } catch (e) {
           console.log(e);
@@ -263,13 +276,17 @@ export default {
           this.sending = true;
           setTimeout(() => {
             this.sending = false;
-          }, 4000);
+            this.$router.push("/films");
+          }, 1000);
         } catch (e) {
           console.log(e);
         }
       }
       if (this.galleryDelete.length !== 0) {
-        this.removeFilmImgGallery(this.galleryDelete);
+        this.removeFilmImgGallery({
+          gallery: this.galleryDelete,
+          id: this.film.id,
+        });
         this.galleryDelete = [];
       }
     },
@@ -295,12 +312,34 @@ export default {
     },
     pushGalleryFilmImg(imgFilmData) {
       if (this.film.gallery.length === 0) {
-        this.film.gallery.push({ file: imgFilmData.file, id: imgFilmData.id });
+        this.film.gallery.push({
+          file: imgFilmData.file,
+          id: imgFilmData.id,
+          imgSRC: URL.createObjectURL(imgFilmData.file),
+        });
       } else {
         this.film.gallery.splice(imgFilmData.index, 1, {
           file: imgFilmData.file,
           id: imgFilmData.id,
           filmId: imgFilmData.objId,
+          imgSRC: URL.createObjectURL(imgFilmData.file),
+        });
+      }
+      this.disabled = false;
+    },
+    pushGalleryFilmImgUa(imgFilmData) {
+      if (this.film.galleryUa.length === 0) {
+        this.film.galleryUa.push({
+          file: imgFilmData.file,
+          id: imgFilmData.id,
+          imgSRC: URL.createObjectURL(imgFilmData.file),
+        });
+      } else {
+        this.film.galleryUa.splice(imgFilmData.index, 1, {
+          file: imgFilmData.file,
+          id: imgFilmData.id,
+          filmId: imgFilmData.objId,
+          imgSRC: URL.createObjectURL(imgFilmData.file),
         });
       }
       this.disabled = false;
@@ -311,6 +350,14 @@ export default {
         this.film.gallery.filter((el) => el.id === id.imgId)[0]
       );
       this.film.gallery.splice(index, 1);
+      this.disabled = false;
+    },
+    removeGalleryImgUa(id) {
+      const index = this.film.galleryUa.findIndex((el) => id.imgId === el.id);
+      this.galleryDelete.push(
+        this.film.galleryUa.filter((el) => el.id === id.imgId)[0]
+      );
+      this.film.galleryUa.splice(index, 1);
       this.disabled = false;
     },
     async returnFilmData() {

@@ -21,13 +21,17 @@ export default {
     downCards: [],
     speedUp: 1,
     speedDown: 1,
+    backBanner:{},
+    statusMain: true,
+    statusNews: true
   },
   actions: {
-    pushMainBannerCard({ commit }, upCards) {
+    async pushMainBannerCard({ commit }, upCards) {
       try {
-        setDb(refDb(db, "banners/upCards"), {
+        await setDb(refDb(db, "banners/upCards"), {
           ...upCards.banner,
           speed: upCards.speed,
+          status: upCards.status
         });
       } catch (e) {
         commit("error", e);
@@ -59,11 +63,12 @@ export default {
         });
       }
     },
-    pushNewsBannerCard({ commit }, downCards) {
+    async pushNewsBannerCard({ commit }, downCards) {
       try {
-        setDb(refDb(db, "banners/downCards"), {
+        await setDb(refDb(db, "banners/downCards"), {
           ...downCards.banner,
           speed: downCards.speed,
+          status: downCards.status,
         });
       } catch (e) {
         commit("error", e);
@@ -82,6 +87,39 @@ export default {
             );
           });
         }
+      });
+    },
+    removeBackBannerCard({ commit }, backBanner) {
+      const storage = getStorage();
+      const desertRef = ref(storage, `banners/backBanner/${backBanner.id}`);
+      deleteObject(desertRef)
+        .then(() => {
+          updateDb(refDb(db, "banners/backBanner/"), {
+            imgSRC: "https://solovero.com/assets/camaleon_cms/image-not-found-4a963b95bf081c3ea02923dceaeb3f8085e1a654fc54840aac61a57a60903fef.png",
+          });
+        })
+        .catch((error) => {
+          commit("error", error);
+        });
+    },
+    async pushBackBannerCard({ commit }, backBanner) {
+      try {
+        await setDb(refDb(db, "banners/backBanner"), {
+          ...backBanner,
+        });
+      } catch (e) {
+        commit("error", e);
+      }
+      const storage = getStorage();
+      const storageRef = ref(storage, "banners/backBanner/" + backBanner.id);
+      uploadBytes(storageRef, backBanner.bannerImg).then((snapshot) => {
+        getDownloadURL(ref(storage, snapshot.metadata.fullPath)).then(
+          (result) => {
+            updateDb(refDb(db, "banners/backBanner/"), {
+              imgSRC: result,
+            });
+          }
+        );
       });
     },
     removeNewsBannerCard(state, deleteObj) {
@@ -115,11 +153,16 @@ export default {
     },
     async fetchSpeedUp(ctx) {
       const speedRef = refDb(db, "banners/upCards/speed");
+      const statusRef = refDb(db, "banners/upCards/status");
       await onValueDb(speedRef, (snapshot) => {
         if (+snapshot.val() !== 0) {
           let speedUp = +snapshot.val();
           ctx.commit("updateSpeedMainBanner", speedUp);
         }
+      });
+      await onValueDb(statusRef, (snapshot) => {
+        let statusMain = snapshot.val();
+        ctx.commit("updateStatusMainBanner", statusMain);
       });
     },
     async fetchDownCards(ctx) {
@@ -139,13 +182,36 @@ export default {
       ctx.commit("updateNewsBanner", newsBanner);
 
     },
+    async fetchBackBanner(ctx) {
+      const dbRef = refDb(db);
+      let backBanner = [];
+      await getDb(childDb(dbRef, `banners/backBanner/`))
+        .then((snapshot) => {
+          if (snapshot.exists()) {
+            backBanner = snapshot.val();
+          } else {
+            console.log("No data available");
+          }
+        })
+        .catch((error) => {
+          console.error(error);
+        });
+      ctx.commit("updateBackBanner", backBanner);
+
+    },
     async fetchSpeedDown(ctx) {
       const speedRef = refDb(db, "banners/downCards/speed");
+      const statusRef = refDb(db, "banners/downCards/status");
+
       await onValueDb(speedRef, (snapshot) => {
         if (+snapshot.val() !== 0) {
           let speedDown = +snapshot.val();
           ctx.commit("updateSpeedNewsBanner", speedDown);
         }
+      });
+      await onValueDb(statusRef, (snapshot) => {
+        let statusMain = snapshot.val();
+        ctx.commit("updateStatusNewsBanner", statusMain);
       });
 
     },
@@ -167,8 +233,17 @@ export default {
         state.downCards[key] = newsBanner[key];
       }
     },
+    updateBackBanner(state, backBanner) {
+      state.backBanner = backBanner;
+    },
     updateSpeedMainBanner(state, speed) {
       state.speedUp = speed;
+    },
+    updateStatusNewsBanner(state, status) {
+      state.statusNews = status;
+    },
+    updateStatusMainBanner(state, status) {
+      state.statusMain = status;
     },
     updateSpeedNewsBanner(state, speed) {
       state.speedDown = speed;
@@ -181,11 +256,20 @@ export default {
     allUpCards(state) {
       return state.upCards;
     },
+    backBanner(state) {
+      return state.backBanner;
+    },
     speedUp(state) {
       return state.speedUp;
     },
     speedDown(state) {
       return state.speedDown;
+    },
+    statusNews(state) {
+      return state.statusNews
+    },
+    statusMain(state) {
+      return state.statusMain
     },
     allDownCards(state) {
       return state.downCards;
